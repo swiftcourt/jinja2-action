@@ -60,6 +60,20 @@ class TestContext(unittest.TestCase):
             result = file.read()
             self.assertEqual(result, expected)
     
+    def test_render_template_with_include(self):
+        context = Context({
+            GitHubActionsInput.OUTPUT_FILE.value: self.TEST_FILE,
+            GitHubActionsInput.TEMPLATE.value: 'test/include-file/template',
+        })
+
+        context.render_template()
+
+        expected = "foo\nbaz\nbar"
+
+        with open('test_output', 'r') as file:
+            result = file.read()
+            self.assertEqual(result, expected)
+
     @classmethod
     def tearDownClass(cls):
         if os.path.exists(cls.TEST_FILE):

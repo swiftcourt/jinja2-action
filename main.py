@@ -1,6 +1,6 @@
 import os
 from j2cli.context import read_context_data
-from jinja2 import Template, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from enums import GitHubActionsInput
 
 class Context:
@@ -30,14 +30,18 @@ class Context:
 
 
     def render_template(self):
-        with open(self._environ[GitHubActionsInput.TEMPLATE], 'r') as file:
-            template_kwargs = {}
-            if self._environ.get(GitHubActionsInput.STRICT) == 'true':
-                template_kwargs.update({'undefined': StrictUndefined})
-            template = Template(str(file.read()), **template_kwargs)
+        env = Environment(
+            loader=FileSystemLoader(os.path.dirname(self._environ[GitHubActionsInput.TEMPLATE])),
+            keep_trailing_newline=True,
+        )
+
+        if self._environ.get(GitHubActionsInput.STRICT) == 'true':
+            env.undefined = StrictUndefined
+
+        template = env.get_template(os.path.basename(self._environ[GitHubActionsInput.TEMPLATE]))
 
         with open(self._environ[GitHubActionsInput.OUTPUT_FILE], 'w') as file:
-            file.write(template.render(**self._variables) + '\n')
+            file.write(template.render(**self._variables))
 
 
     def _guess_format(self, file_name):
@@ -50,4 +54,3 @@ class Context:
             '.env': 'env',
         }
         return formats.get(extension, 'env')
-
