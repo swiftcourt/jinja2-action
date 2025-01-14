@@ -106,3 +106,11 @@ jobs:
           FOO: bar
       - name: '[test] env variables'
         run: diff test/env-variables/result test/env-variables/expected
+
+      - name: '[run] include file'
+        uses: ./
+        with:
+          template: test/include-file/template
+          output_file: test/include-file/result
+      - name: '[test] include file'
+        run: diff test/include-file/result test/include-file/expected
